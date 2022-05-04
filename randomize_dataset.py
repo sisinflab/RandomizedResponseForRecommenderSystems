@@ -1,13 +1,16 @@
 from randomized_response import Dataset, RandomizedResponse
 
 # relative path respect to 'data' folder
-dataset_path = 'Movielens1M/Movielens1M_train.tsv'
+#dataset_path = 'Movielens1M/Movielens1M.tsv'
+dataset_path = ['binarized/Movielens1M.tsv',
+                'binarized/LibraryThing.tsv',
+                'binarized/AmazonDigitalMusic.tsv']
 
-data = Dataset(dataset_path, names=['u', 'i', 'r', 't'], header=0)
-data.binarize(drop_zeros=True, drop_ratings=True)
-data.drop_timestamp()
-data.export_dataset()
-data.info()
+for d in dataset_path:
+    data = Dataset(d, names=['u', 'i'], header=None)
+
+print()
+print()
 
 for eps in [0.5, 1, 2, 3]:
     print(f'eps: {eps}')

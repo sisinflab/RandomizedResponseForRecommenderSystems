@@ -2,12 +2,13 @@ import numpy as np
 import pandas as pd
 import os
 import math
-from . import DATA_DIR, RESULT_DIR
+from .paths import DATA_DIR, RESULT_DIR
+from scipy.sparse import csr_matrix
 
 
 class Dataset:
 
-    def __init__(self, data_name, data_dir=None, header=None, names=None, threshold=3.0):
+    def __init__(self, data_name, data_dir=None, result_dir=None, header=None, names=None, threshold=3.0):
 
         self._users = None
         self._n_users = None
@@ -23,19 +24,28 @@ class Dataset:
         if data_dir is None:
             data_dir = DATA_DIR
 
-        self._data_name = data_name.split('.')[0]
+        self._data_name = data_name.split('/')[-1].split('.')[0]
         self._data_path = os.path.join(data_dir, data_name)
-        self._result_dir = RESULT_DIR
 
-        self.dataset: pd.DataFrame = None
+        if result_dir is None:
+            result_dir = RESULT_DIR
+        self._result_dir = result_dir
+
+        self.dataset = None
+        self._sp_ratings = None
 
         self.header = header
         self.names = names
 
-        self._user_col = names[0]
-        self._item_col = names[1]
-        self._ratings_col = names[2]
-        self._timestamp_col = names[3]
+        self._user_col = None
+        self._item_col = None
+        self._ratings_col = None
+        self._timestamp_col = None
+
+        self.set_columns(names)
+
+        self._user_idx = None
+        self._item_idx = None
 
         self._binary = None
 
@@ -45,6 +55,7 @@ class Dataset:
         # metrics
         self._space_size_log = None
         self._shape_log = None
+        self._density = None
         self._density_log = None
         self._gini_item = None
         self._gini_user = None
@@ -62,6 +73,16 @@ class Dataset:
         self.set_users()
         self.set_items()
         self.set_ratings()
+
+    def set_columns(self, names):
+        if len(names) < 2:
+            raise KeyError('dataset must have at least two columns: user and item')
+        self._user_col = names[0]
+        self._item_col = names[1]
+        if len(names) > 2:
+            self._ratings_col = names[2]
+        if len(names) > 3:
+            self._timestamp_col = names[3]
 
     def set_ratings(self, ratings=None):
 
@@ -102,7 +123,6 @@ class Dataset:
             ratings[postive_ratings] = 1
             # copy modified values into the dataframe
             self.dataset[self._ratings_col] = ratings
-
             # drop rows with negative implicit feedback
             if drop_zeros:
                 negative_ratings = self.dataset[self.dataset[self._ratings_col] == 0]
@@ -113,9 +133,14 @@ class Dataset:
         if drop_ratings:
             self.dataset.drop(self._ratings_col, axis=1, inplace=True)
 
-    def export_dataset(self, parameters: dict = None):
+    def export_dataset(self, parameters: dict = None, directory=None, zero_indexed=False):
         if parameters is None:
             parameters = {}
+        if directory is None:
+            directory = self._result_dir
+        else:
+            directory = os.path.join(self._result_dir, directory)
+
         result_name = self._data_name
 
         if parameters:
@@ -124,16 +149,28 @@ class Dataset:
 
         if os.path.isdir(self._result_dir) is False:
             os.makedirs(self._result_dir)
-        result_path = os.path.join(self._result_dir, result_name)
+        result_path = os.path.join(directory, result_name)
 
         result_path_dir = os.path.dirname(result_path)
         if not os.path.exists(result_path_dir):
             os.makedirs(result_path_dir)
-        self.dataset.to_csv(result_path, sep='\t', header=False, index=False)
 
-    def drop_timestamp(self):
-        self.dataset.drop(self._timestamp_col, axis=1, inplace=True)
-        self.extract_dataset_info()
+        if zero_indexed:
+            dataset = pd.DataFrame()
+            dataset[self._user_col] = self.dataset[self._user_col].map(lambda x: self.user_idx.get(x))
+            dataset[self._item_col] = self.dataset[self._item_col].map(lambda x: self.item_idx.get(x))
+            for c in self.dataset.columns:
+                if c not in {self._user_col, self._item_col}:
+                    dataset[c] = self.dataset[c]
+        else:
+            dataset = self.dataset
+        dataset.to_csv(result_path, sep='\t', header=False, index=False)
+
+    def drop_column(self, column):
+        if column in self.dataset.columns:
+            self.dataset.drop(column, axis=1, inplace=True)
+        else:
+            raise KeyError('column not present in the dataset')
 
     def info(self):
         self.extract_dataset_info()
@@ -144,8 +181,25 @@ class Dataset:
             print(f'{c}: {len(self.dataset[c].unique())} unique values')
         print('-'*40)
 
+    @property
     def values(self):
         return self.dataset.values
+
+    @property
+    def users(self):
+        return self._users
+
+    @property
+    def items(self):
+        return self._items
+
+    @property
+    def n_users(self):
+        return self._n_users
+
+    @property
+    def n_items(self):
+        return self._n_items
 
     @property
     def space_size_log(self):
@@ -161,9 +215,15 @@ class Dataset:
         return self._shape_log
 
     @property
+    def density(self):
+        if self._density is None:
+            self._density = self.transactions / (self._n_users * self._n_items)
+        return self._density
+
+    @property
     def density_log(self):
         if self._density_log is None:
-            self._density_log = math.log10(self.transactions / (self._n_users * self._n_items))
+            self._density_log = math.log10(self.density)
         return self._density_log
 
     @property
@@ -212,3 +272,26 @@ class Dataset:
             self._transactions = len(self.dataset)
         return self._transactions
 
+    @property
+    def sp_ratings(self):
+        if self._sp_ratings is None:
+            row = self.dataset[self._user_col].map(lambda x: self.user_idx.get(x)).to_list()
+            col = self.dataset[self._item_col].map(lambda x: self.item_idx.get(x)).to_list()
+            self._sp_ratings = csr_matrix(([1]*len(row), (row, col)), shape=(self._n_users, self._n_items), dtype=bool)
+        return self._sp_ratings
+
+    @property
+    def user_idx(self):
+        if self._user_idx is None:
+            if self._users is None:
+                self.set_users()
+            self._user_idx = dict(zip(self._users, range(self._n_users)))
+        return self._user_idx
+
+    @property
+    def item_idx(self):
+        if self._item_idx is None:
+            if self._items is None:
+                self.set_items()
+            self._item_idx = dict(zip(self._items, range(self._n_items)))
+        return self._item_idx
