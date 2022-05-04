@@ -15,4 +15,5 @@ from .autoencoders import MultiDAE, MultiVAE, EASER
 from .graph_based import NGCF, LightGCN, RP3beta
 from .knn import ItemKNN, UserKNN, AttributeItemKNN, AttributeUserKNN
 from .generic import ProxyRecommender
+from .Proxy import ProxyRecommender
 

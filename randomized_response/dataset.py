@@ -164,6 +164,9 @@ class Dataset:
                     dataset[c] = self.dataset[c]
         else:
             dataset = self.dataset
+
+        # order by user
+        dataset.sort_values([self._user_col, self._item_col], inplace=True)
         dataset.to_csv(result_path, sep='\t', header=False, index=False)
 
     def drop_column(self, column):
@@ -295,3 +298,29 @@ class Dataset:
                 self.set_items()
             self._item_idx = dict(zip(self._items, range(self._n_items)))
         return self._item_idx
+
+    def train_test_splitting(self, ratio, result_folder='', train_name='train.tsv', test_name='test.tsv'):
+
+        data = self.dataset.copy()
+        user_groups = data.groupby([self._user_col])
+
+        for user, group in user_groups:
+            length = len(group)
+            train = int(math.floor(length * (1 - ratio)))
+            test = length - train
+            list_ = [0] * train + [1] * test
+            np.random.shuffle(list_)
+            data.loc[group.index, 'test_flag'] = list_
+
+        data["test_flag"] = pd.to_numeric(data["test_flag"], downcast='integer')
+        test = data[data["test_flag"] == 1].drop(columns=["test_flag"]).reset_index(drop=True)
+        train = data[data["test_flag"] == 0].drop(columns=["test_flag"]).reset_index(drop=True)
+
+        # store
+        train.sort_values([self._user_col, self._item_col], inplace=True)
+        train_path = os.path.join(self._result_dir, result_folder, train_name)
+        train.to_csv(train_path, sep='\t', header=False, index=False)
+
+        test.sort_values([self._user_col, self._item_col], inplace=True)
+        test_path = os.path.join(self._result_dir, result_folder, test_name)
+        test.to_csv(test_path, sep='\t', header=False, index=False)
