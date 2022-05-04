@@ -168,6 +168,7 @@ class Dataset:
         # order by user
         dataset.sort_values([self._user_col, self._item_col], inplace=True)
         dataset.to_csv(result_path, sep='\t', header=False, index=False)
+        print(f'Dataset: data set stored at {result_path}')
 
     def drop_column(self, column):
         if column in self.dataset.columns:
@@ -299,9 +300,12 @@ class Dataset:
             self._item_idx = dict(zip(self._items, range(self._n_items)))
         return self._item_idx
 
-    def train_test_splitting(self, ratio, result_folder='', train_name='train.tsv', test_name='test.tsv'):
+    def train_test_splitting(self, ratio, result_folder='', train_name='train.tsv', test_name='test.tsv',
+                             random_seed=42):
 
+        np.random.seed(random_seed)
         data = self.dataset.copy()
+        data['test_flag'] = 0
         user_groups = data.groupby([self._user_col])
 
         for user, group in user_groups:
@@ -320,7 +324,9 @@ class Dataset:
         train.sort_values([self._user_col, self._item_col], inplace=True)
         train_path = os.path.join(self._result_dir, result_folder, train_name)
         train.to_csv(train_path, sep='\t', header=False, index=False)
+        print(f'Dataset: training set stored at {train_path}')
 
         test.sort_values([self._user_col, self._item_col], inplace=True)
         test_path = os.path.join(self._result_dir, result_folder, test_name)
         test.to_csv(test_path, sep='\t', header=False, index=False)
+        print(f'Dataset: test set stored at {test_path}')

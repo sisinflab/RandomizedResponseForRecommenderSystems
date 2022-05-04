@@ -1,15 +1,14 @@
 experiment:
-  dataset: AmazonDigitalMusic
+  dataset: LibraryThing
   data_config:
     strategy: fixed
-    train_path: ../data/{0}/train_AmazonDigitalMusic.tsv
-    test_path: ../data/{0}/test_AmazonDigitalMusic.tsv
+    train_path: ../../data/{0}/train_eps3.tsv
+    test_path: ../../data/{0}/test.tsv
   top_k: 50
   evaluation:
     cutoffs: [5, 10, 20, 50]
     simple_metrics: [nDCGRendle2020, Recall, HR, nDCG, Precision, F1, MAP, MAR, LAUC, ItemCoverage, Gini, SEntropy,EFD, EPC,  PopREO, PopRSP, ACLT, APLT, ARP]
   gpu: 0
-  external_models_path: ../external/models/__init__.py
   models:
     Random:
       meta:
@@ -46,5 +45,4 @@ experiment:
       alpha: [uniform, 0, 2]
       beta: [uniform, 0, 2]
       normalize_similarity: [True, False]
-
 

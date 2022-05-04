@@ -1,6 +1,10 @@
 from elliot.run import run_experiment
 import os
 
+ccc = 'config_files/AmazonDigitalMusic/adm_baselines2.yml'
+
+run_experiment(ccc)
+
 
 confs = ['ml_baselines.yml',
          'adm_baselines.yml',

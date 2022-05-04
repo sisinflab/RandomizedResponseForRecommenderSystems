@@ -2,8 +2,8 @@ experiment:
   dataset: Movielens1M
   data_config:
     strategy: fixed
-    train_path: ../data/{0}/Movielens1M_train.tsv
-    test_path: ../data/{0}/Movielens1M_test.tsv
+    train_path: ../data/{0}/train_eps3.tsv
+    test_path: ../data/{0}/test.tsv
   top_k: 50
   evaluation:
     cutoffs: [5, 10, 20, 50]
