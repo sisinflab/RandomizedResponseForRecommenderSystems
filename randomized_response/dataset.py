@@ -50,7 +50,7 @@ class Dataset:
         self._binary = None
 
         self.load_dataset()
-        self.extract_dataset_info()
+        self.set_dataset_info()
 
         # metrics
         self._space_size_log = None
@@ -66,7 +66,7 @@ class Dataset:
     def load_dataset(self):
         self.dataset = pd.read_csv(self._data_path, sep='\t', header=self.header, names=self.names)
 
-    def extract_dataset_info(self):
+    def set_dataset_info(self):
 
         assert self.dataset is not None
 
@@ -177,13 +177,17 @@ class Dataset:
             raise KeyError('column not present in the dataset')
 
     def info(self):
-        self.extract_dataset_info()
+        self.set_dataset_info()
         print('-'*40)
         print('Dataset')
         print(f'rows: {len(self.dataset)}')
         for c in self.dataset.columns:
             print(f'{c}: {len(self.dataset[c].unique())} unique values')
         print('-'*40)
+
+    @property
+    def name(self):
+        return self._data_name
 
     @property
     def values(self):

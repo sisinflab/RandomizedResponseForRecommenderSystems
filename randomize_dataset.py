@@ -6,7 +6,7 @@ dataset_path = ['Movielens1M/train.tsv',
                 'AmazonDigitalMusic/train.tsv']
 
 for d, directory in zip(dataset_path, ['Movielens1M', 'LibraryThing', 'AmazonDigitalMusic']):
-    data = Dataset(d, names=['u', 'i'], header=None, result_dir='data')
+    data = Dataset(d, names=['u', 'i', 'r'], header=None, result_dir='data')
 
     for eps in [0.5, 1, 2, 3]:
         print(f'eps: {eps}')

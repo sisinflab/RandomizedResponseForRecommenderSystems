@@ -156,6 +156,7 @@ class RandomizedResponse:
         randomized_matrix = np.ma.masked_where(fp_1 < self._P[1, 0], randomized_matrix).filled(0)
 
         self._randomized_dataset = pd.DataFrame(zip(*csr_matrix(randomized_matrix).nonzero()), columns=['u', 'i'])
+        self._randomized_dataset['r'] = 1
         self._randomized_dataset.u = self._randomized_dataset.u.map(lambda x: self._users_names[x])
         self._randomized_dataset.i = self._randomized_dataset.i.map(lambda x: self._items_names[x])
 
