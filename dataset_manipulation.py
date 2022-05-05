@@ -33,8 +33,13 @@ def binarize_dataset(path, threshold=3, result_main_dir=None, result_sub_dir=Non
 def generate_datasets(dataset_name, n, data_dir=None, result_path=None, names=None, header=None,
                       split=False, train_test_ratio=0.2, random_seed=42, start=0, end=None):
 
+    if start is None:
+        start = 0
     if end is None:
         end = n
+    if random_seed is None:
+        random_seed = 42
+
     assert start <= end
     random_seeds = [random_seed + idx for idx in range(n)]
 
@@ -49,7 +54,7 @@ def generate_datasets(dataset_name, n, data_dir=None, result_path=None, names=No
     results_path = []
     data = Dataset(dataset_name, data_dir=data_dir, names=names, header=header)
     stats.extend(data.get_metrics(METRICS))
-    for idx in range(start, 30):
+    for idx in range(start, end):
         generated_random_seed = random_seeds[idx]
         generator = DatasetGenerator(data.sp_ratings, random_seed=generated_random_seed)
         generated_matrix = generator.generate_dataset()
