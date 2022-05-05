@@ -6,7 +6,7 @@ RANDOM_SEED = 42
 result_main_dir = 'data'
 
 datasets = [{
-    'path': 'Movielens1M/Movielens1M.tsv',
+    'path': 'Movielens1M/MovieLens1M.tsv',
     'dir': 'Movielens1M/',
     'threshold': 3.0,
     'names': ['u', 'i', 'r', 't'],
