@@ -1,6 +1,7 @@
 import random
 from scipy.sparse import csr_matrix
 
+
 class DatasetGenerator:
     def __init__(self, dataset: csr_matrix, random_seed=42,
                  min_users=100, max_users=2000, min_items=100, max_items=2000,

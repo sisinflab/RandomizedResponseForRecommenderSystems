@@ -5,83 +5,11 @@ from scipy.sparse import csr_matrix
 from collections import Counter
 
 
-class RandomizedResponseCoin:
-
-    def __init__(self, first_coin_prb=0.5, second_coin_prb=0.5, first_class=0, second_class=1,
-                 first_class_name=None, second_class_name=None, random_seed=42):
-
-        self._array = None
-        self._array_len = None
-
-        self._probabilities = None
-        if first_class_name is None:
-            self.first_class_name = str(first_class_name)
-        if second_class_name is None:
-            self.second_class_name = str(second_class_name)
-
-        np.random.seed(random_seed)
-
-        self._fcp = first_coin_prb
-        self._scp = second_coin_prb
-
-        self._first_class = first_class
-        self._second_class = second_class
-        self._classes = [first_class, second_class]
-
-        self.set_probabilities()
-
-    def set_probabilities(self):
-
-        probabilities = np.zeros((2, 2))
-
-        for i, data in enumerate(self._classes):
-            for j, private in enumerate(self._classes):
-                p = 0
-                # probability of the chance of making just one flip
-                if private == data:
-                    p += 1 - self._fcp
-
-                # second flip probabilities
-                if private == self._first_class:
-                    p += self._fcp * self._scp
-                else:
-                    p += self._fcp * (1 - self._scp)
-                probabilities[i][j] = p
-
-        self._probabilities = probabilities
-
-    def set_array(self, array: np.ndarray):
-        self._array = array
-        self._array_len = len(self._array)
-
-    def print_probabilities(self):
-        for i, data in enumerate(self._classes):
-            for j, private in enumerate(self._classes):
-                print(f'The probability of responding {private} given {data} is {self._probabilities[i][j]}')
-
-    def randomize(self):
-
-        if self._array is None:
-            print('Before randomizing an array MUST be loaded. Please call \'RandomizedResponse.set_array\'.')
-            return None
-        # toss a coin
-        fp = np.random.random(self._array_len)
-
-        # probabilità fp
-        randomized_array = np.ma.masked_where(fp < self._fcp, self._array).filled(self._second_class)
-        randomized_array = np.ma.masked_where(fp < self._fcp * self._scp, randomized_array).filled(self._first_class)
-
-        self._randomized_array = randomized_array
-
-    def analysis(self):
-        not_changed = sum(self._array == self._randomized_array)
-        print(f'{not_changed} values changed over {self._array_len} ({not_changed / self._array_len * 100}%)')
-
-
 class RandomizedResponse:
 
-    def __init__(self, epsilon=0, first_class=0, second_class=1,
-                 first_class_name=None, second_class_name=None, random_seed=42):
+    def __init__(self, epsilon=0, random_seed=42):
+
+        np.random.seed(random_seed)
 
         self._users_idx = None
         self._items_idx = None
@@ -96,17 +24,6 @@ class RandomizedResponse:
         self._P = None
         self._pi = None
         self.build_p()
-
-        if first_class_name is None:
-            self.first_class_name = str(first_class_name)
-        if second_class_name is None:
-            self.second_class_name = str(second_class_name)
-
-        np.random.seed(random_seed)
-
-        self._first_class = first_class
-        self._second_class = second_class
-        self._classes = [first_class, second_class]
 
         self._users = dict()
         self._items = dict()
@@ -190,3 +107,76 @@ class RandomizedResponse:
     @property
     def randomized_dataset(self):
         return self._randomized_dataset
+
+
+class RandomizedResponseCoin:
+
+    def __init__(self, first_coin_prb=0.5, second_coin_prb=0.5, first_class=0, second_class=1,
+                 first_class_name=None, second_class_name=None, random_seed=42):
+
+        self._array = None
+        self._array_len = None
+
+        self._probabilities = None
+        if first_class_name is None:
+            self.first_class_name = str(first_class_name)
+        if second_class_name is None:
+            self.second_class_name = str(second_class_name)
+
+        np.random.seed(random_seed)
+
+        self._fcp = first_coin_prb
+        self._scp = second_coin_prb
+
+        self._first_class = first_class
+        self._second_class = second_class
+        self._classes = [first_class, second_class]
+
+        self.set_probabilities()
+
+    def set_probabilities(self):
+
+        probabilities = np.zeros((2, 2))
+
+        for i, data in enumerate(self._classes):
+            for j, private in enumerate(self._classes):
+                p = 0
+                # probability of the chance of making just one flip
+                if private == data:
+                    p += 1 - self._fcp
+
+                # second flip probabilities
+                if private == self._first_class:
+                    p += self._fcp * self._scp
+                else:
+                    p += self._fcp * (1 - self._scp)
+                probabilities[i][j] = p
+
+        self._probabilities = probabilities
+
+    def set_array(self, array: np.ndarray):
+        self._array = array
+        self._array_len = len(self._array)
+
+    def print_probabilities(self):
+        for i, data in enumerate(self._classes):
+            for j, private in enumerate(self._classes):
+                print(f'The probability of responding {private} given {data} is {self._probabilities[i][j]}')
+
+    def randomize(self):
+
+        if self._array is None:
+            print('Before randomizing an array MUST be loaded. Please call \'RandomizedResponse.set_array\'.')
+            return None
+        # toss a coin
+        fp = np.random.random(self._array_len)
+
+        # probabilità fp
+        randomized_array = np.ma.masked_where(fp < self._fcp, self._array).filled(self._second_class)
+        randomized_array = np.ma.masked_where(fp < self._fcp * self._scp, randomized_array).filled(self._first_class)
+
+        self._randomized_array = randomized_array
+
+    def analysis(self):
+        not_changed = sum(self._array == self._randomized_array)
+        print(f'{not_changed} values changed over {self._array_len} ({not_changed / self._array_len * 100}%)')

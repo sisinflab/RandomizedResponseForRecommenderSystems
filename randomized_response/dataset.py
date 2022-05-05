@@ -8,7 +8,7 @@ from scipy.sparse import csr_matrix
 
 class Dataset:
 
-    def __init__(self, data_name, data_dir=None, result_dir=None, header=None, names=None, threshold=3.0):
+    def __init__(self, data=None, data_name=None, data_dir=None, result_dir=None, header=None, names=None, threshold=3):
 
         self._users = None
         self._n_users = None
@@ -23,9 +23,6 @@ class Dataset:
 
         if data_dir is None:
             data_dir = DATA_DIR
-
-        self._data_name = data_name.split('/')[-1].split('.')[0]
-        self._data_path = os.path.join(data_dir, data_name)
 
         if result_dir is None:
             result_dir = RESULT_DIR
@@ -42,15 +39,29 @@ class Dataset:
         self._ratings_col = None
         self._timestamp_col = None
 
-        self.set_columns(names)
-
         self._user_idx = None
         self._item_idx = None
 
         self._binary = None
 
-        self.load_dataset()
-        self.set_dataset_info()
+        # INPUT IS A PATH
+        if isinstance(data, str):
+            self.set_columns(names)
+            self._data_path = os.path.join(data_dir, data)
+            if os.path.exists(self._data_path):
+                self._data_name = data_name
+                if data_name is None:
+                    self._data_name = data.split('/')[-1].split('.')[0]
+                self.load_dataset()
+                self.set_dataset_info()
+            else:
+                raise FileNotFoundError(self._data_path)
+        # INPUT IS A CSR MATRIX
+        elif isinstance(data, csr_matrix):
+            self._data_name = data_name
+            if data_name is None:
+                self._data_name = 'dataset'
+            self.set_sp_ratings(matrix=data)
 
         # metrics
         self._space_size_log = None
@@ -133,13 +144,13 @@ class Dataset:
         if drop_ratings:
             self.dataset.drop(self._ratings_col, axis=1, inplace=True)
 
-    def export_dataset(self, parameters: dict = None, directory=None, zero_indexed=False):
+    def export_dataset(self, parameters: dict = None, result_folder=None, zero_indexed=False):
         if parameters is None:
             parameters = {}
-        if directory is None:
-            directory = self._result_dir
+        if result_folder is None:
+            result_folder = self._result_dir
         else:
-            directory = os.path.join(self._result_dir, directory)
+            result_folder = os.path.join(self._result_dir, result_folder)
 
         result_name = self._data_name
 
@@ -149,7 +160,7 @@ class Dataset:
 
         if os.path.isdir(self._result_dir) is False:
             os.makedirs(self._result_dir)
-        result_path = os.path.join(directory, result_name)
+        result_path = os.path.join(result_folder, result_name)
 
         result_path_dir = os.path.dirname(result_path)
         if not os.path.exists(result_path_dir):
@@ -170,6 +181,8 @@ class Dataset:
         dataset.to_csv(result_path, sep='\t', header=False, index=False)
         print(f'Dataset: data set stored at {result_path}')
 
+        return result_path
+
     def drop_column(self, column):
         if column in self.dataset.columns:
             self.dataset.drop(column, axis=1, inplace=True)
@@ -188,6 +201,10 @@ class Dataset:
     @property
     def name(self):
         return self._data_name
+
+    @name.setter
+    def name(self, value):
+        self._data_name = str(value)
 
     @property
     def values(self):
@@ -282,11 +299,25 @@ class Dataset:
 
     @property
     def sp_ratings(self):
-        if self._sp_ratings is None:
-            row = self.dataset[self._user_col].map(lambda x: self.user_idx.get(x)).to_list()
-            col = self.dataset[self._item_col].map(lambda x: self.item_idx.get(x)).to_list()
-            self._sp_ratings = csr_matrix(([1]*len(row), (row, col)), shape=(self._n_users, self._n_items), dtype=bool)
+        if self.dataset is not None:
+            if self._sp_ratings is None:
+                row = self.dataset[self._user_col].map(lambda x: self.user_idx.get(x)).to_list()
+                col = self.dataset[self._item_col].map(lambda x: self.item_idx.get(x)).to_list()
+                self._sp_ratings = csr_matrix(([1]*len(row), (row, col)), shape=(self._n_users, self._n_items), dtype=bool)
         return self._sp_ratings
+
+    def set_sp_ratings(self, matrix, user_names=None, item_names=None):
+        dataset = pd.DataFrame(zip(*csr_matrix(matrix).nonzero()), columns=['u', 'i'])
+        dataset['r'] = 1
+        if user_names:
+            dataset.u = dataset.u.map(lambda x: user_names[x])
+        if item_names:
+            dataset.i = dataset.i.map(lambda x: item_names[x])
+        self.dataset = dataset
+        self.dataset.sort_values(by=['u', 'i'])
+        self.set_columns(['u', 'i', 'r'])
+        self.set_dataset_info()
+        self._sp_ratings = matrix
 
     @property
     def user_idx(self):
@@ -334,3 +365,13 @@ class Dataset:
         test_path = os.path.join(self._result_dir, result_folder, test_name)
         test.to_csv(test_path, sep='\t', header=False, index=False)
         print(f'Dataset: test set stored at {test_path}')
+
+        return train_path, test_path
+
+    def get_metrics(self, metrics):
+        result = [self._data_name]
+        header = ['name'] + metrics
+        for metric in metrics:
+            result.append(self.__getattribute__(metric))
+        return header, result
+
