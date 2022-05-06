@@ -435,18 +435,18 @@ class Compute_Similarity:
 
             # All data points for a given item
             item_data = self.dataMatrix[:, start_col_block:end_col_block]
-            item_data = item_data.toarray().squeeze()
+            item_data = item_data.toarray() #.squeeze()
 
             # If only 1 feature avoid last dimension to disappear
             if item_data.ndim == 1:
                 item_data = np.atleast_2d(item_data)
 
             if self.use_row_weights:
-                this_block_weights = self.dataMatrix_weighted.T.dot(item_data)
+                this_block_weights = self.dataMatrix_weighted.T.dot(item_data).squeeze()
 
             else:
                 # Compute item similarities
-                this_block_weights = self.dataMatrix.T.dot(item_data)
+                this_block_weights = self.dataMatrix.T.dot(item_data).squeeze()
 
             for col_index_in_block in range(this_block_size):
 

@@ -41,6 +41,7 @@ def run_experiment(config_path: str = ''):
     config_test(builder, base)
     logging_project.init(base.base_namespace.path_logger_config, base.base_namespace.path_log_folder)
     logger = logging_project.get_logger("__main__")
+    _rstate = np.random.RandomState(42)
 
     if base.base_namespace.version != __version__:
         logger.error(f'Your config file use a different version of Elliot! '

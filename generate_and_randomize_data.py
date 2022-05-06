@@ -1,5 +1,5 @@
 import argparse
-from dataset_generation import generate_and_train
+from randomized_response import generate_and_randomize_datasets
 
 parser = argparse.ArgumentParser()
 
@@ -19,4 +19,4 @@ start = args.start
 end = args.end
 random_seed = args.seed
 
-generate_and_train(dataset, folder, n, start=start, end=end, random_seed=random_seed)
+generate_and_randomize_datasets(dataset, folder, n, start=start, end=end, random_seed=random_seed)

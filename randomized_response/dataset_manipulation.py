@@ -1,6 +1,5 @@
 from randomized_response import Dataset, DatasetGenerator, RandomizedResponse
 from randomized_response.paths import RESULT_DIR, DATA_DIR
-import random
 import pandas as pd
 import os
 
@@ -20,6 +19,13 @@ def binarize_dataset(path, threshold=3, result_main_dir=None, result_sub_dir=Non
         names = ['u', 'i', 'r']
     if columns_to_drop is None:
         columns_to_drop = []
+
+    print('Binarizing dataset\n'
+          f'Dataset path: {path}\n'
+          f'Dataset columns: {names}\n'
+          f'Rating threshold: {threshold}\n'
+          f'Results stored at: \'{result_main_dir}\'\n'
+          f'Results stored in sub-directory at: \'{result_sub_dir}\'')
 
     data = Dataset(path, names=names, header=header, threshold=threshold, result_dir=result_main_dir)
     data.binarize(drop_zeros=drop_zeros, drop_ratings=drop_ratings)
@@ -93,3 +99,18 @@ def apply_randomized_response(data_path):
 
         data.dataset = randomizer.randomized_dataset
         data.export_dataset(parameters={'eps': eps})
+
+
+def generate_and_randomize_datasets(dataset, folder, n=10, random_seed=42, start=0, end=None):
+
+    result_main_dir = 'data'
+    result_sub_dir = folder
+    train_path = dataset
+    generated_path = os.path.join(result_main_dir, result_sub_dir, 'generated')
+
+    # generate new datasets
+    generated_paths = generate_datasets(train_path, n=n, data_dir='', result_path=generated_path,
+                                        split=True, random_seed=random_seed, start=start, end=end)
+    # randomize the new datasets
+    for d_path in generated_paths:
+        apply_randomized_response(data_path=d_path[1])
