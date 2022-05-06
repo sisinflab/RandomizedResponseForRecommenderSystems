@@ -1,5 +1,5 @@
 from elliot.run import run_experiment
-from config_template import TEMPLATE
+from config_template import TEMPLATE, TEMPLATE_NO_NOISE
 import os
 import argparse
 
@@ -34,6 +34,13 @@ for dataset in datasets:
 # run experiments on each generated dataset
 for dataset in datasets:
     for gen in range(start, end):
+        # run baseline
+        config = TEMPLATE_NO_NOISE.format(dataset=dataset, generated=gen)
+        config_path = os.path.join(config_dir, 'runtime_conf.yml')
+        with open(config_path, 'w') as file:
+            file.write(config)
+        run_experiment(config_path)
+        # run noised
         for eps in epsilons:
             config = TEMPLATE.format(dataset=dataset, generated=gen, epsilon=eps)
             config_path = os.path.join(config_dir, 'runtime_conf.yml')
