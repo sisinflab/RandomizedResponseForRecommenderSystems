@@ -7,7 +7,7 @@ TEMPLATE = """experiment:
   top_k: 10
   evaluation:
     cutoffs: [10]
-    simple_metrics: [nDCGRendle2020, Recall, HR, nDCG, Precision, F1, MAP, MAR, LAUC, ItemCoverage, Gini, SEntropy,EFD, EPC,  PopREO, PopRSP, ACLT, APLT, ARP]
+    simple_metrics: [nDCGRendle2020, Recall, HR, nDCG, Precision, F1, MAP, MAR, ItemCoverage, Gini, SEntropy,EFD, EPC,  PopREO, PopRSP, ACLT, APLT, ARP]
   gpu: 0
   models:
     Random:
@@ -58,7 +58,7 @@ TEMPLATE_NO_NOISE = """experiment:
   top_k: 10
   evaluation:
     cutoffs: [10]
-    simple_metrics: [nDCGRendle2020, Recall, HR, nDCG, Precision, F1, MAP, MAR, LAUC, ItemCoverage, Gini, SEntropy,EFD, EPC,  PopREO, PopRSP, ACLT, APLT, ARP]
+    simple_metrics: [nDCGRendle2020, Recall, HR, nDCG, Precision, F1, MAP, MAR, ItemCoverage, Gini, SEntropy,EFD, EPC,  PopREO, PopRSP, ACLT, APLT, ARP]
   gpu: 0
   models:
     Random:
