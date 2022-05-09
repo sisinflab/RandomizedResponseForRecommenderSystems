@@ -1,3 +1,5 @@
+import random
+
 from randomized_response import Dataset, DatasetGenerator, RandomizedResponse
 from randomized_response.paths import RESULT_DIR, DATA_DIR
 import pandas as pd
@@ -61,28 +63,47 @@ def generate_datasets(dataset_name, n, data_dir=None, result_path=None, names=No
     data = Dataset(dataset_name, data_dir=data_dir, names=names, header=header)
     stats.extend(data.get_metrics(METRICS))
     for idx in range(start, end):
-        generated_random_seed = random_seeds[idx]
-        generator = DatasetGenerator(data.sp_ratings, random_seed=generated_random_seed)
-        generated_matrix = generator.generate_dataset()
-        generated_dataset = Dataset(generated_matrix, result_dir=result_path)
-        generated_dataset.name = data.name + f'_g{idx}'
-        result_folder = f'{idx}'
-        generated_path = generated_dataset.export_dataset(result_folder=result_folder)
-        stats.append(generated_dataset.get_metrics(METRICS)[1])
-        train_name = f'train_{idx}.tsv'
-        test_name = f'test_{idx}.tsv'
-        if split:
-            train_path, test_path = generated_dataset.train_test_splitting(
-                ratio=train_test_ratio, train_name=train_name, test_name=test_name, random_seed=generated_random_seed,
-                result_folder=result_folder)
-            results_path.append((generated_path, train_path, test_path))
-        else:
-            results_path.append([generated_path])
+
+        g_stats, g_paths = generate_and_split_sub_dataset(
+            data, random_seeds[idx], idx, result_path, train_test_ratio, split)
+
+
+
+        stats.append(g_stats)
+        results_path.append(g_paths)
 
     stats_path = os.path.join(result_path, f'stats_{start}_{end}.tsv')
     pd.DataFrame(stats[1:], columns=stats[0]).to_csv(stats_path, sep='\t', index=False)
     print(f'stats stored at: \'{stats_path}\'')
     return results_path
+
+
+def generate_and_split_sub_dataset(data, seed, idx, result_path, ratio, split):
+    generated_random_seed = seed
+    train_test_ratio = ratio
+    generator = DatasetGenerator(data.sp_ratings, random_seed=generated_random_seed)
+    generated_matrix = generator.generate_dataset()
+    generated_dataset = Dataset(generated_matrix, result_dir=result_path)
+    generated_dataset.name = data.name + f'_g{idx}'
+    result_folder = f'{idx}'
+    generated_path = generated_dataset.export_dataset(result_folder=result_folder)
+    train_name = f'train_{idx}.tsv'
+    test_name = f'test_{idx}.tsv'
+    if split:
+        train_path, test_path = generated_dataset.train_test_splitting(
+            ratio=train_test_ratio, train_name=train_name, test_name=test_name, random_seed=generated_random_seed,
+            result_folder=result_folder)
+        returned_path = (generated_path, train_path, test_path)
+
+        if train_path is None or test_path is None:
+            random.seed(seed)
+            new_seed = random.randint(0, 100000)
+            random.seed(new_seed)
+            return generate_and_split_sub_dataset(data, new_seed, idx, result_path, ratio, split)
+    else:
+        returned_path = [generated_path]
+
+    return generated_dataset.get_metrics(METRICS)[1], returned_path
 
 
 def apply_randomized_response(data_path):

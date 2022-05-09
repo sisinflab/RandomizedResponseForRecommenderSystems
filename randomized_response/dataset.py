@@ -345,13 +345,20 @@ class Dataset:
 
         for user, group in user_groups:
             length = len(group)
-            train = int(math.floor(length * (1 - ratio)))
+            if length == 1:
+                train = 1
+            else:
+                train = int(math.floor(length * (1 - ratio)))
             test = length - train
             list_ = [0] * train + [1] * test
             np.random.shuffle(list_)
             data.loc[group.index, 'test_flag'] = list_
 
         data["test_flag"] = pd.to_numeric(data["test_flag"], downcast='integer')
+
+        if sum(data["test_flag"]) < 10:
+            return None, None
+
         test = data[data["test_flag"] == 1].drop(columns=["test_flag"]).reset_index(drop=True)
         train = data[data["test_flag"] == 0].drop(columns=["test_flag"]).reset_index(drop=True)
 
