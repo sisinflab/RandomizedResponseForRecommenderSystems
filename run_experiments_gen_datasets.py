@@ -12,6 +12,7 @@ parser.add_argument('--dataset', required=True, type=str, nargs='+')
 parser.add_argument('--start', required=False, type=int)
 parser.add_argument('--end', required=False, type=int)
 parser.add_argument('--eps', required=True, type=str, nargs='+')
+parser.add_argument('--baseline', action='store_true')
 
 args = parser.parse_args()
 
@@ -19,6 +20,7 @@ datasets = args.dataset
 start = args.start
 end = args.end
 epsilons = args.eps
+baseline = args.baseline
 
 # check if datasets exist
 for dataset in datasets:
@@ -35,11 +37,12 @@ for dataset in datasets:
 for dataset in datasets:
     for gen in range(start, end):
         # run baseline
-        config = TEMPLATE_NO_NOISE.format(dataset=dataset, generated=gen)
-        config_path = os.path.join(config_dir, 'runtime_conf.yml')
-        with open(config_path, 'w') as file:
-            file.write(config)
-        run_experiment(config_path)
+        if baseline:
+            config = TEMPLATE_NO_NOISE.format(dataset=dataset, generated=gen)
+            config_path = os.path.join(config_dir, 'runtime_conf.yml')
+            with open(config_path, 'w') as file:
+                file.write(config)
+            run_experiment(config_path)
         # run noised
         for eps in epsilons:
             config = TEMPLATE.format(dataset=dataset, generated=gen, epsilon=eps)
