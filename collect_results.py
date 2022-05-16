@@ -2,7 +2,26 @@ import os
 import pandas as pd
 import tqdm
 
-names = ['Random', 'MostPop', 'ItemKNN', 'EASER', 'RP3beta']
+import argparse
+
+DEF_MODEL_NAMES = ['Random', 'MostPop', 'ItemKNN', 'EASER', 'RP3beta']
+OUTPUT_TEMPLATE = 'performance_{dataset}_{model}.tsv'
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument('--names', required=False, type=str, nargs='+', default=DEF_MODEL_NAMES)
+parser.add_argument('--dataset', required=True, type=str)
+parser.add_argument('--subfolder', required=False, type=str, default='results')
+parser.add_argument('--output', required=False, type=str, default='stats')
+parser.add_argument('--end', required=False, type=int)
+parser.add_argument('--seed', required=False, type=int)
+
+args = parser.parse_args()
+
+names = args.names
+dataset = args.dataset
+sub_folder = args.subfolder
+output_folder = args.output
 
 
 def get_result_parameters(folder_name):
@@ -12,6 +31,7 @@ def get_result_parameters(folder_name):
     eps = params[2].replace('eps', '')
     return name, gen, eps
 
+
 def map_models_names(models):
     new_names = []
     for c in models:
@@ -20,17 +40,14 @@ def map_models_names(models):
                 new_names.append(n)
     return new_names
 
+
 def write_on_files(path_and_line):
     for p, l in path_and_line:
         with open(p, 'a') as file:
             file.writelines(l)
 
-dataset = 'AmazonDigitalMusic'
-sub_folder = 'results'
-output_folder = 'stats'
-output_files = 'performance_{dataset}_{model}.tsv'
 
-output_files_path = {n : os.path.join(output_folder, output_files.format(model=n, dataset=dataset)) for n in names}
+output_files_path = {n: os.path.join(output_folder, OUTPUT_TEMPLATE.format(model=n, dataset=dataset)) for n in names}
 
 directory_path = os.path.join('data', dataset, sub_folder)
 files_path = os.listdir(directory_path)
@@ -54,7 +71,7 @@ cols_to_file = [(p, cols_to_string) for p in output_files_path.values()]
 write_on_files(cols_to_file)
 
 for fp in tqdm.tqdm(files_path):
-    result_per_model = {m : '' for m in names}
+    result_per_model = {m: '' for m in names}
     result_parameters = get_result_parameters(fp)
     performance_folder = os.path.join(directory_path, fp, 'performance')
     intra_results_folders = os.listdir(performance_folder)
