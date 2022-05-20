@@ -17,7 +17,6 @@ parser.add_argument('--end', required=False, type=int)
 parser.add_argument('--seed', required=False, type=int)
 
 args = parser.parse_args()
-
 names = args.names
 dataset = args.dataset
 sub_folder = args.subfolder
@@ -94,3 +93,6 @@ for fp in tqdm.tqdm(files_path):
         row_to_write = '\t'.join(string_row) + '\n'
         to_write.append((output_files_path[model], row_to_write))
     write_on_files(to_write)
+
+for path in output_files_path.values():
+    print(f'file stored at {path}')
