@@ -1,5 +1,6 @@
 import pandas as pd
 import os
+import argparse
 
 METRICS = ['nDCGRendle2020', 'Recall',
            'HR', 'nDCG', 'Precision', 'F1', 'MAP', 'MAR', 'ItemCoverage', 'Gini',
@@ -10,15 +11,27 @@ DATASET_METRICS = ['n_users', 'n_items', 'density', 'density_log', 'transactions
 
 CHOSEN_METRIC = 'HR'
 
-models = ['EASER', 'ItemKNN', 'MostPop', 'Random', 'RP3beta']
+PERFORMANCE_PATTERN = 'performance_{dataset}_{model}.tsv'
+RESULT_PATTERN = 'delta_{dataset}_{metric}_{model}_eps_{eps}.tsv'
 
-dataset = 'LibraryThing'
-source_dir = 'stats'
-performance_pattern = 'performance_{dataset}_{model}.tsv'
-result_dir = 'stats/delta/'
-result_name_pattern = 'delta_{dataset}_{metric}_{model}_eps_{eps}.tsv'
+DEFAULT_MODELS = ['EASER', 'ItemKNN', 'MostPop', 'Random', 'RP3beta']
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument('--dataset', required=True, type=str)
+parser.add_argument('--subfolder', required=False, type=str, default='stats')
+parser.add_argument('--model', required=False, type=str, nargs='+', default=DEFAULT_MODELS)
+parser.add_argument('--output', required=False, type=str, default='stats/delta/')
+parser.add_argument('--eps', required=False, type=float, nargs='+', default=[3, 2, 1, 0.5])
+
+args = parser.parse_args()
+dataset = args.dataset
+source_dir = args.subfolder
+result_dir = args.output
+epsilon = [int(eps) if eps%1 == 0 else eps for eps in args.eps]
+models = args.model
+
 stats_path = os.path.join('data', dataset, f'{dataset}_stats.tsv')
-epsilon = [3, 2, 1, 0.5]
 
 
 def generated_dataset_stats(path):
@@ -44,7 +57,7 @@ if os.path.isdir(result_dir) is False:
     os.makedirs(result_dir)
 
 performance_files = {m: os.path.join(source_dir,
-                                     performance_pattern.format(dataset=dataset, model=m)) for m in models}
+                                     PERFORMANCE_PATTERN.format(dataset=dataset, model=m)) for m in models}
 
 for model in models:
     performance = pd.read_csv(performance_files[model], sep='\t', header=0)
@@ -71,7 +84,7 @@ for model in models:
 
     for eps, result in eps_results.items():
         data_result = pd.DataFrame(result, columns=header)
-        result_path = os.path.join(result_dir, result_name_pattern.format(dataset=dataset,
+        result_path = os.path.join(result_dir, RESULT_PATTERN.format(dataset=dataset,
                                                                           metric=CHOSEN_METRIC,
                                                                           model=model,
                                                                           eps=eps))

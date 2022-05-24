@@ -1,8 +1,12 @@
 import os
 import pandas as pd
 import tqdm
-
 import argparse
+
+"""
+This script
+"""
+
 
 DEF_MODEL_NAMES = ['Random', 'MostPop', 'ItemKNN', 'EASER', 'RP3beta']
 OUTPUT_TEMPLATE = 'performance_{dataset}_{model}.tsv'
@@ -69,10 +73,10 @@ cols_to_string = '\t'.join(cols) + '\n'
 cols_to_file = [(p, cols_to_string) for p in output_files_path.values()]
 write_on_files(cols_to_file)
 
-for fp in tqdm.tqdm(files_path):
+for file_path in tqdm.tqdm(files_path):
     result_per_model = {m: '' for m in names}
-    result_parameters = get_result_parameters(fp)
-    performance_folder = os.path.join(directory_path, fp, 'performance')
+    result_parameters = get_result_parameters(file_path)
+    performance_folder = os.path.join(directory_path, file_path, 'performance')
     intra_results_folders = os.listdir(performance_folder)
     result_file = None
     for files in intra_results_folders:
