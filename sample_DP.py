@@ -1,7 +1,7 @@
 from elliot.run import run_experiment
 import os
 
-confs = ['config_files/AmazonDigitalMusic/adm_baselines2.yml']
+confs = ['AmazonDigitalMusic/adm_baselines2eps.yml']
 
 confs_paths = [os.path.join('config_files', c) for c in confs]
 
