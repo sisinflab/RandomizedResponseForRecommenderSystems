@@ -20,6 +20,8 @@ parser.add_argument('--folder', required=True, type=str)
 parser.add_argument('--threshold', required=False, type=float, default=3.0)
 parser.add_argument('--names', required=False, type=str, nargs='+', default=['u', 'i', 'r', 't'])
 parser.add_argument('--header', required=False, type=int, default=None)
+parser.add_argument('--eps', required=False, type=float, nargs='+', default=None)
+
 
 args = parser.parse_args()
 
@@ -28,6 +30,8 @@ result_sub_dir = args.folder
 threshold = args.threshold
 names = args.names
 header = args.header
+epsilon = args.eps
+
 generated_path = os.path.join(result_main_dir, result_sub_dir, 'generated')
 
 # binarize dataset: from explicit to implicit feedbacks
@@ -40,5 +44,7 @@ train_path, test_path = binarized_data.train_test_splitting(
     ratio=0.2, result_folder=result_sub_dir, random_seed=RANDOM_SEED)
 
 # compute differential privacy on training set
-print('randomized response...')
-apply_randomized_response(data_path=train_path)
+if epsilon:
+    print('randomized response...')
+    apply_randomized_response(data_path=train_path, epsilon=epsilon)
+

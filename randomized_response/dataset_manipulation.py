@@ -106,14 +106,20 @@ def generate_and_split_sub_dataset(data, seed, idx, result_path, ratio, split):
     return generated_dataset.get_metrics(METRICS)[1], returned_path
 
 
-def apply_randomized_response(data_path):
+def apply_randomized_response(data_path, epsilon=None):
+
+    if epsilon is None:
+        epsilon = [0.5, 1, 2, 3]
 
     data_folder = os.path.dirname(data_path)
     data_name = os.path.basename(data_path)
 
+    print(f'RANDOMIZED RESPONSE: applying randomized response on \'{data_name}\'\n'
+          f'with epsilon values: {epsilon}')
+
     data = Dataset(data_name, data_dir=data_folder, names=['u', 'i', 'r'], header=None, result_dir=data_folder)
 
-    for eps in [0.5, 1, 2, 3]:
+    for eps in epsilon:
         randomizer = RandomizedResponse(epsilon=eps, random_seed=42)
         randomizer.set_matrix(data.values)
         randomizer.randomize()
