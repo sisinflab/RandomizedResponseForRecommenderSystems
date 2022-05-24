@@ -12,7 +12,7 @@ CHOSEN_METRIC = 'HR'
 
 models = ['EASER', 'ItemKNN', 'MostPop', 'Random', 'RP3beta']
 
-dataset = 'AmazonDigitalMusic'
+dataset = 'LibraryThing'
 source_dir = 'stats'
 performance_pattern = 'performance_{dataset}_{model}.tsv'
 result_dir = 'stats/delta/'
