@@ -10,7 +10,7 @@ DATASET_METRICS = ['n_users', 'n_items', 'density', 'density_log', 'transactions
                    'gini_item', 'gini_user']
 
 # TODO: this could be more than one
-CHOSEN_METRICS = ['nDCGRendle2020']
+CHOSEN_METRICS = METRICS
 
 PERFORMANCE_PATTERN = 'performance_{dataset}_{model}.tsv'
 RESULT_PATTERN = 'delta_{dataset}_{metric}_{model}_eps_{eps}.tsv'
