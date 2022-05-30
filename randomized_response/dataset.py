@@ -230,7 +230,7 @@ class Dataset:
     def space_size_log(self):
         if self._space_size_log is None:
             scale_factor = 1000
-            self._space_size_log = math.log10(self._n_users * self._n_items / scale_factor)
+            self._space_size_log = math.log10(math.sqrt(self._n_users * self._n_items) / scale_factor)
         return self._space_size_log
 
     @property

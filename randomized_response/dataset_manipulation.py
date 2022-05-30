@@ -67,8 +67,6 @@ def generate_datasets(dataset_name, n, data_dir=None, result_path=None, names=No
         g_stats, g_paths = generate_and_split_sub_dataset(
             data, random_seeds[idx], idx, result_path, train_test_ratio, split)
 
-
-
         stats.append(g_stats)
         results_path.append(g_paths)
 

@@ -3,10 +3,6 @@ import pandas as pd
 import tqdm
 import argparse
 
-"""
-This script
-"""
-
 
 DEF_MODEL_NAMES = ['Random', 'MostPop', 'ItemKNN', 'EASER', 'RP3beta']
 OUTPUT_TEMPLATE = 'performance_{dataset}_{model}.tsv'
