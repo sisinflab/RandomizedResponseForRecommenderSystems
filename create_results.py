@@ -6,8 +6,10 @@ METRICS = ['nDCGRendle2020', 'Recall',
            'HR', 'nDCG', 'Precision', 'F1', 'MAP', 'MAR', 'ItemCoverage', 'Gini',
            'SEntropy', 'EFD', 'EPC', 'PopREO', 'PopRSP', 'ACLT', 'APLT', 'ARP']
 
-DATASET_METRICS = ['n_users', 'n_items', 'density', 'density_log', 'transactions', 'space_size_log', 'shape_log',
-                   'gini_item', 'gini_user']
+METRICS = ['Precision', 'ARP']
+
+DATASET_METRICS = ['n_users', 'n_items', 'transactions', 'density', 'density_log', 'shape', 'shape_log', 'gini_item', 'gini_user',
+           'space_size', 'space_size_log', 'ratings_per_user', 'ratings_per_item']
 
 # TODO: this could be more than one
 CHOSEN_METRICS = METRICS

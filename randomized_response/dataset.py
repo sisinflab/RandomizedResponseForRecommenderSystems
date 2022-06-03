@@ -64,12 +64,16 @@ class Dataset:
             self.set_sp_ratings(matrix=data)
 
         # metrics
+        self._space_size = None
         self._space_size_log = None
+        self._shape = None
         self._shape_log = None
         self._density = None
         self._density_log = None
         self._gini_item = None
         self._gini_user = None
+        self._ratings_per_user = None
+        self._ratings_per_item = None
 
         self._sorted_items = None
         self._sorted_users = None
@@ -227,16 +231,28 @@ class Dataset:
         return self._n_items
 
     @property
+    def space_size(self):
+        if self._space_size is None:
+            scale_factor = 1000
+            self._space_size = math.sqrt(self._n_users * self._n_items) / scale_factor
+        return self._space_size
+
+    @property
     def space_size_log(self):
         if self._space_size_log is None:
-            scale_factor = 1000
-            self._space_size_log = math.log10(math.sqrt(self._n_users * self._n_items) / scale_factor)
+            self._space_size_log = math.log10(self.space_size)
         return self._space_size_log
+
+    @property
+    def shape(self):
+        if self._shape is None:
+            self._shape = self._n_users / self._n_items
+        return self._shape
 
     @property
     def shape_log(self):
         if self._shape_log is None:
-            self._shape_log = math.log10(self._n_users / self._n_items)
+            self._shape_log = math.log10(self.shape)
         return self._shape_log
 
     @property
@@ -276,6 +292,20 @@ class Dataset:
 
         self._gini_user = 1 - 2*gini_terms
         return self._gini_user
+
+    @property
+    def ratings_per_user(self):
+
+        if self._ratings_per_user is None:
+            self._ratings_per_user = self.transactions / self.n_users
+        return self._ratings_per_user
+
+    @property
+    def ratings_per_item(self):
+
+        if self._ratings_per_item is None:
+            self._ratings_per_item = self.transactions / self.n_items
+        return self._ratings_per_item
 
     @property
     def sorted_items(self):

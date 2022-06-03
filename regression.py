@@ -9,23 +9,28 @@ from sklearn.preprocessing import PolynomialFeatures
 import statsmodels.api as sm
 import argparse
 
+
 #nDCGRendle2020 Recall HR nDCG Precision F1 MAP MAR ItemCoverage Gini SEntropy EFD EPC PopREO PopRSP ACLT APLT ARP
 FILE_PATTERN = 'delta_{dataset}_{metric}_{model}_eps_{eps}.tsv'
 iv1 = ['space_size_log', 'shape_log', 'density_log', 'gini_user', 'gini_item', 'epsilon']
 iv2 = ['n_users', 'n_items', 'density', 'density_log', 'transactions', 'space_size_log', 'shape_log', 'gini_item',
        'gini_user', 'epsilon']
 iv3 = ['n_items', 'space_size_log', 'transactions', 'shape_log', 'epsilon', 'gini_item', 'density']
-DEF_INDEPENDENT_VARS = iv3
-ZSCORED = iv3
+iv4 = ['space_size_log', 'shape_log', 'density_log', 'gini_item', 'epsilon']
+iv5 = ['density', 'density_log', 'shape', 'shape_log', 'gini_item', 'gini_user',
+           'space_size', 'space_size_log', 'ratings_per_user', 'ratings_per_item', 'epsilon']
+
+iv6 = ['space_size', 'shape',  'gini_item', 'ratings_per_user', 'ratings_per_item', 'epsilon']
+
+
+DEF_INDEPENDENT_VARS = iv6
+ZSCORED = iv6
 NOT_ZSCORED = []
 DEFAULT_MODELS = ['ItemKNN', 'EASER', 'MostPop', 'RP3beta']
 VAR_PARAMS = ['pvalues']
 MOD_PARAMS = ['rsquared', 'rsquared_adj']
 DEFAULT_METRIC = ['Recall']
 FEATURE_SELECTION = False
-
-
-# INDEPENDENT_VARS = ['shape_log']
 
 
 def selected_single_files(directory):
@@ -66,7 +71,7 @@ def p_value(model, X, Y):
     return p_val
 
 
-def regression(X, Y, ivars, tvar):
+def regression(X, Y):
 
     Xc = zscore(X)
     Xc = sm.add_constant(Xc)
@@ -78,7 +83,7 @@ def regression(X, Y, ivars, tvar):
     # to_remove = Y.index[Y.isna().values.reshape(-1)]
     # Y = Y.drop(to_remove)
     # Xd = Xd.drop(to_remove)
-    #Y = zscore(Y)
+    Y = Y
 
     est = sm.OLS(Y, Xd)
     result = est.fit()
@@ -127,8 +132,8 @@ def feature_selection(ivar, X, Y, topk=5):
 def result_tab(data_result):
     result_tab_pattern = 'stats/regression/tab_{value}_{dataset}_{metric}.tsv'
     DECIMAL_NUMBERS = 5
-    VALUE = 'pvalues'
-    #VALUE = 'params'
+    #VALUE = 'pvalues'
+    VALUE = 'params'
     x = None
     for dataset, result in data_result.items():
         cols = None
@@ -217,7 +222,8 @@ for metric in args.metric:
         for p in poly_names:
             value = p
             for name, x_name in x_names.items():
-                value = value.replace(x_name, name)
+                if value == x_name:
+                    value = value.replace(x_name, name)
             names.append(value)
 
         INDEPENDENT_VARS = names
@@ -230,8 +236,8 @@ for metric in args.metric:
         var_idx = [idx for idx, name in enumerate(names) if name in set(INDEPENDENT_VARS)]
 
         ZSCORED = INDEPENDENT_VARS
-        result = regression(Xv[:, var_idx], Y, INDEPENDENT_VARS, TARGET_VAR)
-        global_row = [dataset, model, metric, result.rsquared, len(INDEPENDENT_VARS), sum(result.pvalues > .5)]
+        result = regression(Xv[:, var_idx], Y)
+        global_row = [dataset, model, metric, result.rsquared, len(INDEPENDENT_VARS), sum(result.pvalues > .05)]
         global_results.append(global_row)
         dataset_result[dataset].append((result, model))
 
@@ -239,4 +245,4 @@ for metric in args.metric:
     glob_result_path = GLOBAL_RESULT_PATTERN.format(metric=metric)
     global_results.to_csv(glob_result_path, sep='\t', index=False)
     print(f'File stored at: {glob_result_path}')
-    #result_tab(dataset_result)
+    result_tab(dataset_result)
