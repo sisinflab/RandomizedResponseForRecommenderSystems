@@ -9,7 +9,7 @@ Our analysis focuses on three well-known datasets from three different domains:
 [AmazonDigitalMusic](https://jmcauley.ucsd.edu/data/amazon/) (music).
 
 ## Download the Datasets
-All the datasets are available within the repository, in the 'randomized_response/data' directory.
+All the datasets are available within the repository, in the 'data/' directory.
 
 ## Reproduce the Experiments
 
