@@ -19,7 +19,7 @@ For reproducing our results several steps are needed.
 privacy budgets.
 - [Train](#training) four different recommender models on each of the generated 600 sub-datasets
 - [Collect](#collect-results) the results and [compute](#generate-results-differences) the variations of the selected metrics (Precision and ARP)
-- [Train](#compute-regression-and-store-results) the regressor model and store the **weights** and variables **p-values**
+- Train the [regressor model](#compute-regression-and-store-results) and store the **weights** and variables **p-values**
 
 Note, the pipeline above could be applied on the three datasets independently. 
 In the following the commands for each dataset are reported.
