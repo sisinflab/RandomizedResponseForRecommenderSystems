@@ -20,7 +20,6 @@ pip-selfcheck.json
 # End of https://www.toptal.com/developers/gitignore/api/venv
 
 /results/
-/data_bak/*
 /share/
 **/__pycache__/**
 *.log
