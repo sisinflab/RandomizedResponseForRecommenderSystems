@@ -99,7 +99,7 @@ From the previously collected results, compute the differences between the perfo
 dataset and the noised versions. The results are augmented with the selected datasets' characteristics 
 and stored at 'performance/delta/'.
 ```
-python generate_results.py a--dataset MovieLens1M LibraryThing AmazonDigitalMusic --subfolder performance --model Random ItemKNN MostPop Random RP3beta EASER --metrics Precision ARP --characteristics space_size shape gini_item ratings_per_user ratings_per_item --output performance/delta --eps 0.5 2 3
+python generate_results.py --dataset MovieLens1M LibraryThing AmazonDigitalMusic --subfolder performance --model Random ItemKNN MostPop Random RP3beta EASER --metrics Precision ARP --characteristics space_size shape gini_item ratings_per_user ratings_per_item --output performance/delta --eps 0.5 2 3
 ```
 
 
