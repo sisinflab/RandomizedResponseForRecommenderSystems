@@ -14,12 +14,12 @@ All the datasets are available within the repository, in the 'data/' directory.
 ## Reproduce the Experiments
 
 For reproducing our results several steps are needed. 
-- [Binarize](#binarize) the datasets
-- From the binarized version [generate](#generate-datasets-and-apply-randomized-response) 600 sub-datasets and apply **randomized response** on them, using different 
+1. [Binarize](#binarize) the datasets
+2. From the binarized version [generate](#generate-datasets-and-apply-randomized-response) 600 sub-datasets and apply **randomized response** on them, using different 
 privacy budgets.
-- [Train](#training) four different recommender models on each of the generated 600 sub-datasets
-- [Collect](#collect-results) the results and [compute](#generate-results-differences) the variations of the selected metrics (Precision and ARP)
-- Train the [regressor model](#compute-regression-and-store-results) and store the **weights** and variables **p-values**
+3. [Train](#training) four different recommender models on each of the generated 600 sub-datasets
+4. [Collect](#collect-results) the results and [compute](#generate-results-differences) the variations of the selected metrics (Precision and ARP)
+5. Train the [regressor model](#compute-regression-and-store-results) and store the **weights** and variables **p-values**
 
 Note, the pipeline above could be applied on the three datasets independently. 
 In the following the commands for each dataset are reported.
