@@ -124,16 +124,6 @@ python regression.py --dataset AmazonDigitalMusic --dir performance/delta --metr
 python regression.py --dataset AmazonDigitalMusic --dir performance/delta --metric Precision ARP --result performance --target pvalues
 ```
 
-## The Team
-This work is developed by
-* Vito Walter Anelli (vitowalter.anelli@poliba.it)
-* Tommaso Di Noia (tommaso.dinoia@poliba.it)
-* Eugenio Di Sciascio (eugenio.disciascio@poliba.it)
-* Antonio Ferrara<sup id="a1">[*](#f1)</sup> (antonio.ferrara@poliba.it)
-* Alberto Carlo Maria Mancino<sup id="a1">[*](#f1)</sup> (alberto.mancino@poliba.it)
-
-<b id="f1"><sup>*</sup></b> Corresponding authors
-
 ## License
 This work is released under [APACHE2 License](./LICENSE).
 
