@@ -1,6 +1,6 @@
 #  The Effect of Differential Privacy on Recommendation
 
-This is the official repository of the paper * The Effect of Differential Privacy on Recommendation* submitted to 
+This is the official repository of the paper *The Effect of Differential Privacy on Recommendation* submitted to 
 CIKM 2022.
 This work investigates the effect on recommender systems' performance of the application of **differential privacy**.
 Our analysis focuses on three well-known datasets from three different domains: 
