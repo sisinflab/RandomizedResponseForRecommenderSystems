@@ -14,7 +14,7 @@ All the datasets are available within the repository, in the 'data/' directory.
 ## Reproduce the Experiments
 
 For reproducing our results several steps are needed. 
-- [Binarize](###Binarize) the datasets
+- [Binarize](#-Binarize) the datasets
 - From the binarized version **generate** 600 sub-datasets and apply **randomized response** on them, using different 
 privacy budgets.
 - **Train** four different recommender models on each of the generated 600 sub-datasets
