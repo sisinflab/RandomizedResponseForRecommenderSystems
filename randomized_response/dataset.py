@@ -197,7 +197,8 @@ class Dataset:
         self.set_dataset_info()
         print('-'*40)
         print('Dataset')
-        print(f'rows: {len(self.dataset)}')
+        print(f'Rows: {len(self.dataset)}')
+        print('Columns')
         for c in self.dataset.columns:
             print(f'{c}: {len(self.dataset[c].unique())} unique values')
         print('-'*40)

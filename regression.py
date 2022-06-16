@@ -1,30 +1,17 @@
 import os
 import pandas as pd
 from scipy.stats import zscore
-from sklearn.linear_model import LinearRegression, SGDRegressor
 import numpy as np
-from sklearn.metrics import r2_score
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import PolynomialFeatures
 import statsmodels.api as sm
 import argparse
 
 
-#nDCGRendle2020 Recall HR nDCG Precision F1 MAP MAR ItemCoverage Gini SEntropy EFD EPC PopREO PopRSP ACLT APLT ARP
 FILE_PATTERN = 'delta_{dataset}_{metric}_{model}_eps_{eps}.tsv'
-iv1 = ['space_size_log', 'shape_log', 'density_log', 'gini_user', 'gini_item', 'epsilon']
-iv2 = ['n_users', 'n_items', 'density', 'density_log', 'transactions', 'space_size_log', 'shape_log', 'gini_item',
-       'gini_user', 'epsilon']
-iv3 = ['n_items', 'space_size_log', 'transactions', 'shape_log', 'epsilon', 'gini_item', 'density']
-iv4 = ['space_size_log', 'shape_log', 'density_log', 'gini_item', 'epsilon']
-iv5 = ['density', 'density_log', 'shape', 'shape_log', 'gini_item', 'gini_user',
-           'space_size', 'space_size_log', 'ratings_per_user', 'ratings_per_item', 'epsilon']
-
-iv6 = ['space_size', 'shape',  'gini_item', 'ratings_per_user', 'ratings_per_item', 'epsilon']
-
-
-DEF_INDEPENDENT_VARS = iv6
-ZSCORED = iv6
+GLOBAL_RESULT_PATTERN = '{result_folder}/regression/reg_glob_{metric}.tsv'
+DEF_INDEPENDENT_VARS = ['space_size', 'shape',  'gini_item', 'ratings_per_user', 'ratings_per_item', 'epsilon']
+ZSCORED = DEF_INDEPENDENT_VARS
 NOT_ZSCORED = []
 DEFAULT_MODELS = ['ItemKNN', 'EASER', 'MostPop', 'RP3beta']
 VAR_PARAMS = ['pvalues']
@@ -77,32 +64,11 @@ def regression(X, Y):
     Xc = sm.add_constant(Xc)
     INDEPENDENT_VARS.insert(0, 'constant')
     Xd = pd.DataFrame(Xc, columns=INDEPENDENT_VARS)
-
-    #Y.reset_index(inplace=True, drop=True)
-
-    # to_remove = Y.index[Y.isna().values.reshape(-1)]
-    # Y = Y.drop(to_remove)
-    # Xd = Xd.drop(to_remove)
     Y = Y
 
     est = sm.OLS(Y, Xd)
     result = est.fit()
     print(result.summary())
-
-    # pvalues
-
-    # model = LinearRegression()
-    # model.fit(X, Y.values.reshape(-1))
-    # Y_ = model.predict(X)
-    # r2 = r2_score(Y, Y_)
-    # constant = model.intercept_
-    # result = dict(zip(INDEPENDENT_VARS, model.coef_))
-    # result['r2'] = r2
-    # result['constant'] = constant
-    # for m in ZSCORED + NOT_ZSCORED:
-    #     #plotting(X, Y, m, result)
-    #     pass
-    # print(p_value(model, X, Y))
     return result
 
 
@@ -129,11 +95,12 @@ def feature_selection(ivar, X, Y, topk=5):
     return vars
 
 
-def result_tab(data_result):
-    result_tab_pattern = 'stats/regression/tab_{value}_{dataset}_{metric}.tsv'
+def result_tab(data_result, value='pvalues', folder='regression'):
+    result_tab_pattern = '{folder}/regression/tab_{value}_{dataset}_{metric}.tsv'
     DECIMAL_NUMBERS = 5
     #VALUE = 'pvalues'
-    VALUE = 'params'
+    #VALUE = 'params'
+    VALUE = value
     x = None
     for dataset, result in data_result.items():
         cols = None
@@ -155,7 +122,7 @@ def result_tab(data_result):
         result_df = pd.DataFrame(result_data, columns=cols)
         result_df['model'] = models
         result_df.set_index('model', inplace=True)
-        result_path = result_tab_pattern.format(value=VALUE, dataset=dataset, metric=y)
+        result_path = result_tab_pattern.format(value=VALUE, dataset=dataset, metric=y, folder=folder)
         result_df.round(DECIMAL_NUMBERS).to_csv(result_path, sep='\t')
         print(f'regression tab stored at: {result_path}')
 
@@ -165,15 +132,18 @@ parser.add_argument('--dataset', required=True, type=str, nargs='+')
 parser.add_argument('--dir', required=False, type=str, default='stats/delta')
 parser.add_argument('--model', required=False, type=str, nargs='+', default=DEFAULT_MODELS)
 parser.add_argument('--metric', required=False, type=str, nargs='+', default=DEFAULT_METRIC)
-# parser.add_argument('--output', required=False, type=str, default='stats/delta/')
 parser.add_argument('--eps', required=False, type=float, nargs='+', default=[3, 2, 0.5])
+parser.add_argument('--target', required=False, type=str, default='pvalues') # possible values: pvalues or params
+parser.add_argument('--result', required=False, type=str, default='regression_results')
+
 args = parser.parse_args()
 
-
-source_directory = 'stats/delta'
 datasets = args.dataset
+source_directory = args.dir
 models = args.model
 epsilon = args.eps
+target_value = args.target
+result_folder = args.result
 
 
 for metric in args.metric:
@@ -181,7 +151,6 @@ for metric in args.metric:
 
     global_header = ['dataset', 'model', 'metric', 'R2', 'n_vars', 'p_value_over05']
     global_results = []
-    GLOBAL_RESULT_PATTERN = 'stats/regression/reg_glob_{metric}.tsv'
 
     for files, params in selected_files(source_directory, models, datasets, epsilon):
 
@@ -201,12 +170,6 @@ for metric in args.metric:
             data = pd.concat([data, new_data])
         data.dropna(inplace=True)
         data.reset_index(inplace=True, drop=True)
-
-        # BASELINE DATA
-        # baseline_data = new_data
-        # baseline_data[f'delta_{metric}'] = 0
-        # baseline_data['epsilon'] = 1000
-        #data = pd.concat([data, baseline_data])
 
         X = data[INDEPENDENT_VARS]
         Y = data[TARGET_VAR]
@@ -242,7 +205,9 @@ for metric in args.metric:
         dataset_result[dataset].append((result, model))
 
     global_results = pd.DataFrame(global_results, columns=global_header)
-    glob_result_path = GLOBAL_RESULT_PATTERN.format(metric=metric)
+    glob_result_path = GLOBAL_RESULT_PATTERN.format(result_folder=result_folder, metric=metric)
+    if not os.path.exists(os.path.dirname(glob_result_path)):
+        os.makedirs(os.path.dirname(glob_result_path))
     global_results.to_csv(glob_result_path, sep='\t', index=False)
     print(f'File stored at: {glob_result_path}')
-    result_tab(dataset_result)
+    result_tab(dataset_result, target_value, folder=result_folder)

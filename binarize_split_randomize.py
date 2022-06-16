@@ -4,7 +4,7 @@ from randomized_response import binarize_dataset, apply_randomized_response
 
 RANDOM_SEED = 42
 
-result_main_dir = 'data'
+result_main_dir = 'data_bak'
 
 datasets = [{
     'path': 'Movielens1M/MovieLens1M.tsv',

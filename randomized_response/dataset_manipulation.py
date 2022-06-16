@@ -10,11 +10,11 @@ METRICS = ['n_users', 'n_items', 'density', 'density_log',
            'gini_item', 'gini_user']
 
 
-def binarize_dataset(path, threshold=3, result_main_dir=None, result_sub_dir=None, names=None, header=0,
+def binarize_dataset(data_path, threshold=3, result_main_dir=None, result_sub_dir=None, names=None, header=0,
                      drop_zeros=True, drop_ratings=False, columns_to_drop=None, random_seed=42):
 
     if result_main_dir is None:
-        result_main_dir = os.path.dirname(path)
+        result_main_dir = os.path.dirname(data_path)
     if result_sub_dir is None:
         result_sub_dir = ''
     if names is None:
@@ -22,19 +22,20 @@ def binarize_dataset(path, threshold=3, result_main_dir=None, result_sub_dir=Non
     if columns_to_drop is None:
         columns_to_drop = []
 
-    print('Binarizing dataset\n'
-          f'Dataset path: {path}\n'
-          f'Dataset columns: {names}\n'
-          f'Rating threshold: {threshold}\n'
-          f'Results stored at: \'{result_main_dir}\'\n'
-          f'Results stored in sub-directory at: \'{result_sub_dir}\'')
+    result_path = os.path.join(result_main_dir, result_sub_dir)
 
-    data = Dataset(path, names=names, header=header, threshold=threshold, result_dir=result_main_dir)
+    print('-'*50 + '\n'
+          'Binarizing dataset\n'
+          f'Dataset path: {data_path}\n'
+          f'Rating threshold: {threshold}\n'
+          f'Results could be found in the following directory: \'{result_path}\'\n')
+
+    data = Dataset(data_path, data_dir='',  names=names, header=header, threshold=threshold, result_dir=result_main_dir)
     data.binarize(drop_zeros=drop_zeros, drop_ratings=drop_ratings)
     for col_name in columns_to_drop:
         data.drop_column(col_name)
     data.info()
-    result_path = data.export_dataset(zero_indexed=True, result_folder=result_sub_dir, parameters={'binarized': ''})
+    result_path = data.export_dataset(zero_indexed=True, result_folder=result_sub_dir, parameters={})
     return data, result_path
 
 
@@ -63,10 +64,8 @@ def generate_datasets(dataset_name, n, data_dir=None, result_path=None, names=No
     data = Dataset(dataset_name, data_dir=data_dir, names=names, header=header)
     stats.extend(data.get_metrics(METRICS))
     for idx in range(start, end):
-
         g_stats, g_paths = generate_and_split_sub_dataset(
             data, random_seeds[idx], idx, result_path, train_test_ratio, split)
-
         stats.append(g_stats)
         results_path.append(g_paths)
 
@@ -128,7 +127,7 @@ def apply_randomized_response(data_path, epsilon=None):
 
 def generate_and_randomize_datasets(dataset, folder, n=10, random_seed=42, start=0, end=None):
 
-    result_main_dir = 'data'
+    result_main_dir = ''
     result_sub_dir = folder
     train_path = dataset
     generated_path = os.path.join(result_main_dir, result_sub_dir, 'generated')
