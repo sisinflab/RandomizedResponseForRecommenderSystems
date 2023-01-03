@@ -35,7 +35,7 @@ def binarize_dataset(data_path, threshold=3, result_main_dir=None, result_sub_di
     for col_name in columns_to_drop:
         data.drop_column(col_name)
     data.info()
-    result_path = data.export_dataset(zero_indexed=True, result_folder=result_sub_dir, parameters={})
+    result_path = data.export_dataset(zero_indexed=False, result_folder=result_sub_dir, parameters={})
     return data, result_path
 
 
